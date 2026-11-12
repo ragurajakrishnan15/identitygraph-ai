@@ -45,7 +45,6 @@ with sync_playwright() as p:
     def apps():
         pg.goto(B + "/applications", wait_until="networkidle")
         pg.wait_for_selector("tbody tr")
-        first = pg.inner_text("tbody tr:first-child td:first-child")
         pg.select_option("select[aria-label=Tier]", "High")
         pg.wait_for_timeout(1200)
         tiers = pg.locator("tbody tr td:last-child").all_inner_texts()
