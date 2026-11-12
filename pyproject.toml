@@ -13,6 +13,7 @@ testpaths = ["tests", "backend/app/tests"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
+extend-exclude = ["notebooks"]
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = ["E501"]
