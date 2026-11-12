@@ -1,0 +1,150 @@
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { Card, ErrorBox, PageHeader, SimulatedBanner, TierBadge } from "@/components/ui";
+import { api } from "@/lib/api-client";
+import { cn, TIER_COLOR } from "@/lib/utils";
+import { validateScoreRequest, type FormErrors } from "@/lib/validators";
+import type { ScoreRequest, ScoreResponse } from "@/types/scoring";
+
+const EMPTY: ScoreRequest = {
+  full_name: "", date_of_birth: "1990-01-01", email: "", phone: "", address: "", device_id: "", ip_address: "",
+  employment_status: "employed", annual_income: 70000, requested_credit: 10000, application_channel: "web",
+};
+const SAMPLE: ScoreRequest = {
+  full_name: "Jordan Reed", date_of_birth: "2003-02-14", email: "j.r.99@mail.test", phone: "+1-555-0100100",
+  address: "12 Pine St, Unit 4", device_id: "dev-demo-001", ip_address: "203.0.113.7",
+  employment_status: "unemployed", annual_income: 18000, requested_credit: 22000, application_channel: "web",
+};
+const STAGES = ["Validating input", "Building point-in-time features", "Scoring model", "Explaining result"];
+
+const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
+  <label className="block text-xs text-slate-400">{label}{children}{error && <span className="text-danger">{error}</span>}</label>
+);
+
+export default function ScorePage() {
+  const [v, setV] = useState<ScoreRequest>(EMPTY);
+  const [errs, setErrs] = useState<FormErrors>({});
+  const [stage, setStage] = useState(-1);
+  const [res, setRes] = useState<ScoreResponse | null>(null);
+  const [sim, setSim] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const set = <K extends keyof ScoreRequest>(k: K, val: ScoreRequest[K]) => setV((p) => ({ ...p, [k]: val }));
+  const txt = (k: keyof ScoreRequest, ph?: string) => (
+    <input className="input mt-1" placeholder={ph} value={String(v[k])} onChange={(e) => set(k, e.target.value as never)} />
+  );
+  const num = (k: "annual_income" | "requested_credit") => (
+    <input type="number" className="input mt-1" value={v[k]} onChange={(e) => set(k, Number(e.target.value))} />
+  );
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const found = validateScoreRequest(v);
+    setErrs(found);
+    if (Object.keys(found).length) return;
+    setErr(null); setRes(null); setStage(0);
+    const timer = setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 1)), 900);
+    try {
+      const r = await api.score(v);
+      setRes(r.data); setSim(r.simulated);
+    } catch (x) {
+      setErr((x as Error).message);
+    } finally {
+      clearInterval(timer); setStage(-1);
+    }
+  }
+
+  return (
+    <>
+      <PageHeader title="Score Application" subtitle="Submit a synthetic application. Labels are never accepted. Result is a simulated recommendation."
+        action={<button type="button" className="btn-ghost" onClick={() => { setV(SAMPLE); setErrs({}); }}>Fill suspicious sample</button>} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="Application">
+          <form onSubmit={submit} className="grid grid-cols-2 gap-3" noValidate>
+            <Field label="Full name" error={errs.full_name}>{txt("full_name")}</Field>
+            <Field label="Date of birth" error={errs.date_of_birth}>{txt("date_of_birth", "YYYY-MM-DD")}</Field>
+            <Field label="Email" error={errs.email}>{txt("email")}</Field>
+            <Field label="Phone" error={errs.phone}>{txt("phone")}</Field>
+            <div className="col-span-2"><Field label="Address" error={errs.address}>{txt("address")}</Field></div>
+            <Field label="Device ID" error={errs.device_id}>{txt("device_id")}</Field>
+            <Field label="IP address" error={errs.ip_address}>{txt("ip_address", "1.2.3.4")}</Field>
+            <Field label="Employment">
+              <select className="input mt-1" value={v.employment_status} onChange={(e) => set("employment_status", e.target.value)}>
+                {["employed", "self_employed", "unemployed", "student", "retired"].map((o) => <option key={o}>{o}</option>)}
+              </select>
+            </Field>
+            <Field label="Channel">
+              <select className="input mt-1" value={v.application_channel} onChange={(e) => set("application_channel", e.target.value)}>
+                {["web", "mobile", "branch", "partner"].map((o) => <option key={o}>{o}</option>)}
+              </select>
+            </Field>
+            <Field label="Annual income ($)" error={errs.annual_income}>{num("annual_income")}</Field>
+            <Field label="Requested credit ($)" error={errs.requested_credit}>{num("requested_credit")}</Field>
+            <div className="col-span-2"><button className="btn w-full justify-center" disabled={stage >= 0}>{stage >= 0 ? STAGES[stage] + "…" : "Score application"}</button></div>
+          </form>
+        </Card>
+
+        <div className="space-y-4">
+          {err && <ErrorBox message={err} />}
+          {sim && <SimulatedBanner />}
+          {stage >= 0 && (
+            <Card title="Scoring">
+              <ol className="space-y-2 text-sm">
+                {STAGES.map((s, i) => (
+                  <li key={s} className={cn("flex items-center gap-2", i <= stage ? "text-white" : "text-slate-600")}>
+                    <span className={cn("h-2 w-2 rounded-full", i < stage ? "bg-safe" : i === stage ? "animate-pulse bg-accent" : "bg-navy-600")} /> {s}
+                  </li>
+                ))}
+              </ol>
+            </Card>
+          )}
+          {!res && stage < 0 && !err && <Card><p className="text-sm text-slate-400">Submit the form to see a score, tier, contributing factors and linked entities.</p></Card>}
+          {res && (
+            <>
+              <Card title="Risk assessment">
+                <div className="flex items-center gap-6">
+                  <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full border-4" style={{ borderColor: TIER_COLOR[res.tier] }}>
+                    <div className="text-3xl font-semibold text-white">{res.display_score}</div>
+                    <div className="text-[10px] text-slate-400">/ 100</div>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div><TierBadge tier={res.tier} /></div>
+                    <div className="text-slate-300">{res.recommendation}</div>
+                    <div className="text-xs text-slate-500">Model {res.model_version}. Uncalibrated score {res.score.toFixed(3)} (not a probability).</div>
+                    <Link className="text-xs text-accent-soft" href={`/applications/${res.application_id}`}>Open case {res.application_id}</Link>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-slate-500">{res.note}</p>
+              </Card>
+              <Card title="Top contributing factors">
+                <ul className="space-y-2 text-sm">
+                  {res.top_factors.map((f) => (
+                    <li key={f.feature} className="flex items-start justify-between gap-3">
+                      <span>{f.description}</span>
+                      <span className={cn("shrink-0 text-xs", f.contribution > 0 ? "text-danger" : "text-safe")}>{f.direction}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-slate-500">Factors are model associations, not proof or causation.</p>
+              </Card>
+              <Card title="Network preview">
+                {res.linked_entities.length === 0 ? <p className="text-sm text-slate-400">No linked entities.</p> : (
+                  <ul className="space-y-1 text-sm">
+                    {res.linked_entities.map((l) => (
+                      <li key={l.entity_id} className="flex justify-between">
+                        <Link href={`/network?focus=${encodeURIComponent(l.entity_id)}`} className="text-accent-soft">{l.kind}: {l.label}</Link>
+                        <span className={l.shared_with_other_applications > 0 ? "text-warn" : "text-slate-500"}>shared with {l.shared_with_other_applications} other app(s)</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-3 text-xs text-slate-500">Connections are investigation signals, not proof of fraud.</p>
+              </Card>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

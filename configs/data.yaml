@@ -1,0 +1,6 @@
+seed: 42
+n_records: 20000
+start_date: "2025-01-01"
+days: 240
+fraud_rate_target: 0.07
+output_dir: data/synthetic

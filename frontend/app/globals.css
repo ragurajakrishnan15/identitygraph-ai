@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+body { @apply bg-navy-950 text-slate-200 antialiased; background-image: radial-gradient(1200px 500px at 80% -10%, rgba(124,108,246,.14), transparent); }
+.card { @apply rounded-xl border border-navy-600/60 bg-navy-800/80 p-4 shadow-lg shadow-black/20; }
+.input { @apply w-full rounded-lg border border-navy-600 bg-navy-900 px-3 py-2 text-sm outline-none focus:border-accent; }
+.btn { @apply inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/80 disabled:opacity-50; }
+.btn-ghost { @apply inline-flex items-center gap-2 rounded-lg border border-navy-600 px-3 py-2 text-sm text-slate-300 hover:bg-navy-700; }
+.th { @apply px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-400; }
+.td { @apply px-3 py-2 text-sm; }
+.react-flow__attribution { display: none; }

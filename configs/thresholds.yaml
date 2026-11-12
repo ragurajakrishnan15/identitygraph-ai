@@ -1,0 +1,7 @@
+# Defaults used if artifacts/thresholds.json (validation-selected) is absent.
+medium: 0.30
+high: 0.60
+recommendations:
+  Low: "Low-risk recommendation (simulated)"
+  Medium: "Manual review (simulated)"
+  High: "Enhanced investigation (simulated)"

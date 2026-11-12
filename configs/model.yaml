@@ -1,0 +1,5 @@
+split:
+  train_frac: 0.60
+  val_frac: 0.20     # remainder is test; all splits are chronological
+random_state: 42
+primary_model: graph_gradient_boosting

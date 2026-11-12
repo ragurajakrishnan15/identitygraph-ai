@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+.ruff_cache/
+data/raw/*
+data/processed/*
+data/synthetic/*
+!data/samples/
+artifacts/*
+!artifacts/.gitkeep
+*.db
+node_modules/
+.next/
+frontend/.env.local
