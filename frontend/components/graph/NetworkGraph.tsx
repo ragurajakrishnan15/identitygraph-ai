@@ -25,11 +25,18 @@ function layout(data: NetworkResponse): Node[] {
   }
   const rings = new Map<number, string[]>();
   data.nodes.forEach((n) => { const d = depth.get(n.id) ?? 3; rings.set(d, [...(rings.get(d) ?? []), n.id]); });
+  // Ring radius grows with node count so 130px-wide nodes never overlap on a ring.
   const pos = new Map<string, { x: number; y: number }>();
-  rings.forEach((ids, d) => ids.forEach((id, i) => {
-    const a = (2 * Math.PI * i) / ids.length + d;
-    pos.set(id, { x: Math.cos(a) * d * 170, y: Math.sin(a) * d * 170 });
-  }));
+  let prevR = 0;
+  [...rings.keys()].sort((a, b) => a - b).forEach((d) => {
+    const ids = rings.get(d)!;
+    const r = d === 0 ? 0 : Math.max(prevR + 140, (ids.length * 100) / (2 * Math.PI));
+    prevR = r;
+    ids.forEach((id, i) => {
+      const a = (2 * Math.PI * i) / ids.length + d * 0.5;
+      pos.set(id, { x: Math.cos(a) * r, y: Math.sin(a) * r });
+    });
+  });
   return data.nodes.map((n) => ({
     id: n.id,
     position: pos.get(n.id) ?? { x: 0, y: 0 },
@@ -46,12 +53,12 @@ function layout(data: NetworkResponse): Node[] {
 export function NetworkGraph({ data, onSelect }: { data: NetworkResponse; onSelect: (id: string) => void }) {
   const nodes = useMemo(() => layout(data), [data]);
   const edges: Edge[] = useMemo(() => data.edges.map((e) => ({
-    id: e.id, source: e.source, target: e.target, label: e.relation, style: { stroke: "#475569" },
-    labelStyle: { fill: "#64748b", fontSize: 9 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#475569" },
+    id: e.id, source: e.source, target: e.target, style: { stroke: "#475569" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#475569" },
   })), [data]);
   return (
     <div className="h-[560px] w-full rounded-xl border border-navy-600/60 bg-navy-900">
-      <ReactFlow nodes={nodes} edges={edges} fitView onNodeClick={(_, n) => onSelect(n.id)} proOptions={{ hideAttribution: true }}>
+      <ReactFlow nodes={nodes} edges={edges} fitView fitViewOptions={{ padding: 0.15 }} minZoom={0.1} onNodeClick={(_, n) => onSelect(n.id)} proOptions={{ hideAttribution: true }}>
         <Background color="#1a2547" />
         <Controls />
       </ReactFlow>

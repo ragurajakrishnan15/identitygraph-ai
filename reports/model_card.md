@@ -22,6 +22,13 @@ Chronological 60/20/20 split (12,000 / 4,000 / 4,000). Primary metric PR-AUC. Th
 The graph-enhanced model has slightly higher recall but marginally lower PR-AUC than the baseline: **no PR-AUC improvement from graph features** in this run.
 Precision/recall use each model's validation-selected `high` threshold. Re-running training regenerates these numbers; this table is a snapshot.
 
+## Finding: why graph features did not help (from notebooks 02/03)
+`neighbor_fraud_ratio` only uses train-period labels that are >= 30 days old. Synthetic fraud clusters are short-lived, so in the validation and test
+periods it is non-zero for only 0.1% / 0.0% of rows, while it is informative for train rows. The model therefore sees a feature in training that is
+almost always zero at evaluation (train/serve skew), which plausibly explains the slightly lower PR-AUC of the graph model. The other graph features
+(`component_size`, `max_entity_degree`) are strongly predictive on their own (univariate AUC ~0.72) but overlap with the reuse/velocity features the baseline already has.
+Possible follow-ups (not done): drop `neighbor_fraud_ratio`, or compute it from all labels matured before each application's timestamp (valid in production, but outside the spec's train-only rule).
+
 ## Explainability
 SHAP TreeExplainer (log-odds contributions) with a fallback to importance-weighted deviations. Factors are associations, not causal proof.
 
