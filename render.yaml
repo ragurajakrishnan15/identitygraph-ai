@@ -7,7 +7,7 @@ services:
     healthCheckPath: /api/v1/health
     envVars:
       - key: CORS_ORIGINS
-        value: https://YOUR-VERCEL-APP.vercel.app   # replace after deploying the frontend
+        value: https://identitygraph-ai.vercel.app
       - key: CORS_ORIGIN_REGEX
         value: https://.*\.vercel\.app              # also allow Vercel preview URLs
       # DATABASE_URL is optional: it defaults to a SQLite file seeded at start. Set it to a Postgres URL to persist.
