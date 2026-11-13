@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from ..features.pipeline import build_features
@@ -19,7 +20,7 @@ def score_new_applications(bundle: dict, history: pd.DataFrame, new: pd.DataFram
     for c in ("fraud_label", "fraud_scenario"):
         if c in new.columns:
             new = new.drop(columns=c)
-    new["fraud_label"] = 0  # placeholder; never used (maturity lag + train cutoff)
+    new["fraud_label"] = np.nan  # unknown label: excluded from neighbor_fraud_ratio at any age
     hist = history[[c for c in new.columns if c in history.columns]].copy()
     allrows = pd.concat([hist, new], ignore_index=True)
     allrows["_is_new"] = [False] * len(hist) + [True] * len(new)

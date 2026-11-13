@@ -109,3 +109,16 @@ def test_component_size_grows_with_shared_device():
                     phone=f"p{i}", address=f"a{i}", email=f"e{i}@x.test", ip_address=f"i{i}") for i in range(4)])
     f = build_features(df)
     assert list(f.component_size) == [1, 2, 3, 4]
+
+
+def test_unknown_labels_are_excluded_from_neighbor_fraud_ratio():
+    """Online applications have no label (NaN). They must not count as known non-fraud once matured."""
+    cols = ["device_id", "ip_address", "email", "phone", "address"]
+    rows = [
+        dict(application_id="1", application_timestamp="2025-01-01", applicant_id="A1", fraud_label=1),
+        dict(application_id="2", application_timestamp="2025-01-02", applicant_id="A2", fraud_label=float("nan")),
+        dict(application_id="3", application_timestamp="2025-01-03", applicant_id="A3", fraud_label=float("nan")),
+        dict(application_id="4", application_timestamp="2025-03-01", applicant_id="A4"),
+    ]
+    g = graph_features(_toy(rows), cols, maturity_days=7)
+    assert g.neighbor_fraud_ratio.iloc[3] == 1.0   # 1 known fraud / 1 known; NaNs ignored, not diluted to 1/3

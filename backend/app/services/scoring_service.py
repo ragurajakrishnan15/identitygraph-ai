@@ -86,7 +86,7 @@ def score_payloads(payloads: list[dict]) -> list[dict]:
 def _extend_history(new: pd.DataFrame) -> None:
     global _history
     add = new.copy()
-    add["fraud_label"] = 0  # placeholder; never read (after train cutoff + maturity lag)
+    add["fraud_label"] = float("nan")  # unknown label: ignored by neighbor_fraud_ratio at any age
     _history = pd.concat([_get_history(), add], ignore_index=True)
 
 

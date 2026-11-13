@@ -76,7 +76,11 @@ def graph_features(df: pd.DataFrame, entity_cols: list[str], train_end=None,
 
     # neighbor fraud ratio, per entity, with maturity lag and train cutoff
     ts = epoch_seconds(df["application_timestamp"])
-    labels = df["fraud_label"].to_numpy() if "fraud_label" in df.columns else np.zeros(n)
+    # Unknown labels (NaN/None, e.g. applications scored online) are excluded from numerator AND denominator.
+    labels = (pd.to_numeric(df["fraud_label"], errors="coerce").to_numpy(dtype=float)
+              if "fraud_label" in df.columns else np.full(n, np.nan))
+    known = ~np.isnan(labels)
+    labels = np.where(known, labels, 0.0)
     lag = maturity_days * 86400
     cutoff = ts.max() if train_end is None else int((pd.Timestamp(train_end) - pd.Timestamp('1970-01-01')) // pd.Timedelta(seconds=1))
     fraud_known = np.zeros(n)
@@ -85,7 +89,7 @@ def graph_features(df: pd.DataFrame, entity_cols: list[str], train_end=None,
         for _, idx in df.groupby(c).indices.items():
             t = ts[idx]
             lab = labels[idx]
-            usable = (t <= cutoff).astype(int)  # only train-period labels
+            usable = ((t <= cutoff) & known[idx]).astype(int)  # only known, train-period labels
             cum_n = np.concatenate([[0], np.cumsum(usable)])
             cum_f = np.concatenate([[0], np.cumsum(lab * usable)])
             upto = np.searchsorted(t, t - lag, side="right")  # prior rows old enough to be matured
