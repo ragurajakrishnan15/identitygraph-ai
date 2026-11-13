@@ -8,5 +8,5 @@ if [ ! -f artifacts/model.joblib ]; then
   python scripts/evaluate.py
 fi
 alembic upgrade head   # versioned schema migrations
-python scripts/seed_db.py
+python scripts/seed_db.py --if-empty
 exec uvicorn backend.app.main:app --host 0.0.0.0 --port "${PORT:-8000}"

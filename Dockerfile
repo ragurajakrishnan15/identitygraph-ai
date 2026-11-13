@@ -12,6 +12,8 @@ COPY alembic.ini .
 COPY scripts ./scripts
 # Synthetic data + model are built into the image so the container starts in seconds (no credentials/downloads).
 RUN python scripts/generate_data.py && python scripts/validate_data.py && python scripts/train.py && python scripts/evaluate.py
+# Seed the default SQLite DB at build time: seeding at start-up exceeds the 512 MB free-tier memory limit.
+RUN alembic upgrade head && python scripts/seed_db.py
 COPY docker-entrypoint.sh .
 RUN chmod +x docker-entrypoint.sh
 EXPOSE 8000
