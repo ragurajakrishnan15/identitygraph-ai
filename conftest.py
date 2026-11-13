@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT))
 _TMP = Path(tempfile.mkdtemp(prefix="idgraph_test_"))
 os.environ["IDENTITYGRAPH_ARTIFACT_DIR"] = str(_TMP / "artifacts")
 os.environ["IDENTITYGRAPH_PROCESSED_DIR"] = str(_TMP / "processed")
+os.environ["WARM_ON_START"] = "0"
 os.environ["DATABASE_URL"] = f"sqlite:///{(_TMP / 'test.db').as_posix()}"
 
 import pytest  # noqa: E402

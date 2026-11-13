@@ -53,14 +53,8 @@ def _name_email_mismatch(df: pd.DataFrame) -> np.ndarray:
     return (~np.array(ok)).astype(int)
 
 
-def build_features(df: pd.DataFrame, train_end: pd.Timestamp | None = None,
-                   cfg: dict | None = None) -> pd.DataFrame:
-    """Return df (time-sorted) with engineered feature columns appended.
-
-    train_end: labels from applications after this instant are never used by graph features.
-    """
-    cfg = cfg or load_config("features")
-    df = df.sort_values("application_timestamp", kind="stable").reset_index(drop=True).copy()
+def add_local_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features that depend only on the row itself (no history). Mutates and returns df."""
     ts = df["application_timestamp"]
     dob = pd.to_datetime(df["date_of_birth"])
     df["age"] = (ts - dob).dt.days / 365.25
@@ -72,6 +66,18 @@ def build_features(df: pd.DataFrame, train_end: pd.Timestamp | None = None,
     df["is_night"] = ((df["hour"] < 6) | (df["hour"] >= 23)).astype(int)
     df["email_name_mismatch"] = _name_email_mismatch(df)
     df["young_high_credit"] = ((df["age"] < 23) & (df["requested_credit"] > df["annual_income"] * 0.5)).astype(int)
+    return df
+
+
+def build_features(df: pd.DataFrame, train_end: pd.Timestamp | None = None,
+                   cfg: dict | None = None) -> pd.DataFrame:
+    """Return df (time-sorted) with engineered feature columns appended.
+
+    train_end: labels from applications after this instant are never used by graph features.
+    """
+    cfg = cfg or load_config("features")
+    df = df.sort_values("application_timestamp", kind="stable").reset_index(drop=True).copy()
+    add_local_features(df)
 
     for col in ENTITY_COLS:
         a, d = _prior_counts(df, col)

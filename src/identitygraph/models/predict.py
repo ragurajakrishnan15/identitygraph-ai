@@ -29,3 +29,12 @@ def score_new_applications(bundle: dict, history: pd.DataFrame, new: pd.DataFram
     out = feats[feats["application_id"].isin(new["application_id"])].copy()
     out["score"] = score_frame(bundle, out)
     return out
+
+
+def score_new_applications_online(bundle: dict, featurizer, new: pd.DataFrame) -> pd.DataFrame:
+    """Same result as `score_new_applications`, computed incrementally from cached state (see
+    features/online.py). Raises OnlineFallback when the full recompute is required."""
+    new = new.drop(columns=[c for c in ("fraud_label", "fraud_scenario") if c in new.columns])
+    out = featurizer.features(new)
+    out["score"] = score_frame(bundle, out)
+    return out

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -18,6 +20,9 @@ log = logging.getLogger("identitygraph")
 async def lifespan(app: FastAPI):
     setup_logging()
     init_db()
+    if os.getenv("WARM_ON_START", "1") == "1":  # background: never delays the port opening
+        from .services import scoring_service
+        threading.Thread(target=scoring_service.warm_up, daemon=True, name="warm-up").start()
     log.info("IdentityGraph AI API started (synthetic data; simulated decisions)")
     yield
 

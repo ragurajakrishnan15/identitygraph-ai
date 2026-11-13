@@ -16,7 +16,7 @@ Last updated: 2026-11-13. Items marked **verified** were actually run in this se
 - **Not yet deployed.** Configs and steps are ready (`docs/DEPLOYMENT.md`); deploying needs the owner's Vercel and Render accounts.
 - Graph lift (+0.015 PR-AUC) relies on a 7-day label-maturity lag chosen after seeing test results (one alternative tried); single seed, no confidence intervals.
 - MLflow and the IEEE-CIS real-data track are not implemented (the separate FraudShield project covers IEEE-CIS).
-- New-application scoring takes ~4-5 s (recomputes features over history). Monitoring is batch only. Synthetic metrics are optimistic; scores are uncalibrated.
+- Online scoring is incremental (`features/online.py`, tested equal to the full recompute); out-of-order timestamps fall back to a ~4-5 s full recompute. Monitoring is batch only. Synthetic metrics are optimistic; scores are uncalibrated.
 - One earlier unexplained one-off UI smoke failure (not reproduced in many later runs).
 
 ## Run commands

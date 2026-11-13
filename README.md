@@ -98,7 +98,7 @@ Scoring requests reject label fields (`extra="forbid"`). Responses carry `is_sim
 - Decision thresholds are selected on the validation split only; medium/high review tiers are capped at 15% of volume.
 
 ## Limitations
-Synthetic data only; uncalibrated scores; scoring a new application recomputes features over the full history (a few seconds, not low-latency);
+Synthetic data only; uncalibrated scores; new applications are scored incrementally from in-memory entity state (tens of ms locally; the first call after a restart builds that state; an application dated before existing history falls back to a full recompute of a few seconds);
 monitoring is batch (train vs held-out period), not real-time; no real-data track (the model is not validated on real fraud); single seed, no confidence intervals.
 
 ## Tests / CI

@@ -29,6 +29,7 @@ export default function ScorePage() {
   const [res, setRes] = useState<ScoreResponse | null>(null);
   const [sim, setSim] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [slow, setSlow] = useState(false);
 
   const set = <K extends keyof ScoreRequest>(k: K, val: ScoreRequest[K]) => setV((p) => ({ ...p, [k]: val }));
   const txt = (k: keyof ScoreRequest, ph?: string) => (
@@ -45,13 +46,15 @@ export default function ScorePage() {
     if (Object.keys(found).length) return;
     setErr(null); setRes(null); setStage(0);
     const timer = setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 1)), 900);
+    // The hosted API runs on a small free instance: the first score after idle can take a while.
+    const slowTimer = setTimeout(() => setSlow(true), 6000);
     try {
       const r = await api.score(v);
       setRes(r.data); setSim(r.simulated);
     } catch (x) {
       setErr((x as Error).message);
     } finally {
-      clearInterval(timer); setStage(-1);
+      clearInterval(timer); clearTimeout(slowTimer); setSlow(false); setStage(-1);
     }
   }
 
@@ -97,6 +100,11 @@ export default function ScorePage() {
                   </li>
                 ))}
               </ol>
+              {slow && (
+                <p role="status" className="mt-3 text-xs text-muted">
+                  Still working. The demo API runs on a small free server, so the first score after a quiet period can take up to a minute. Please keep this page open.
+                </p>
+              )}
             </Card>
           )}
           {!res && stage < 0 && !err && <Card><p className="text-sm text-muted">Submit the form to see a score, tier, contributing factors and linked entities.</p></Card>}
