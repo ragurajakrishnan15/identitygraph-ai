@@ -16,6 +16,12 @@ const SAMPLE: ScoreRequest = {
   address: "12 Pine St, Unit 4", device_id: "dev-demo-001", ip_address: "203.0.113.7",
   employment_status: "unemployed", annual_income: 18000, requested_credit: 22000, application_channel: "web",
 };
+/** A real system captures device and IP from the request itself. In this demo they are generated per submission
+ *  (documentation IP ranges, random device id) unless the user opens "Advanced" to reuse values on purpose. */
+const autoIdentity = () => {
+  const r = () => Math.random().toString(36).slice(2, 10);
+  return { device_id: `dev-auto-${r()}`, ip_address: `203.0.113.${1 + Math.floor(Math.random() * 254)}` };
+};
 const STAGES = ["Validating input", "Building point-in-time features", "Scoring model", "Explaining result"];
 
 const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
@@ -30,6 +36,7 @@ export default function ScorePage() {
   const [sim, setSim] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [slow, setSlow] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
 
   const set = <K extends keyof ScoreRequest>(k: K, val: ScoreRequest[K]) => setV((p) => ({ ...p, [k]: val }));
   const txt = (k: keyof ScoreRequest, ph?: string) => (
@@ -41,7 +48,8 @@ export default function ScorePage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const found = validateScoreRequest(v);
+    const payload: ScoreRequest = advanced ? v : { ...v, ...autoIdentity() };
+    const found = validateScoreRequest(payload);
     setErrs(found);
     if (Object.keys(found).length) return;
     setErr(null); setRes(null); setStage(0);
@@ -49,7 +57,7 @@ export default function ScorePage() {
     // The hosted API runs on a small free instance: the first score after idle can take a while.
     const slowTimer = setTimeout(() => setSlow(true), 6000);
     try {
-      const r = await api.score(v);
+      const r = await api.score(payload);
       setRes(r.data); setSim(r.simulated);
     } catch (x) {
       setErr((x as Error).message);
@@ -61,7 +69,7 @@ export default function ScorePage() {
   return (
     <>
       <PageHeader title="Score Application" subtitle="Submit a synthetic application. Labels are never accepted. Result is a simulated recommendation."
-        action={<button type="button" className="btn-ghost" onClick={() => { setV(SAMPLE); setErrs({}); }}>Fill suspicious sample</button>} />
+        action={<button type="button" className="btn-ghost" onClick={() => { setV(SAMPLE); setErrs({}); setAdvanced(true); }}>Fill suspicious sample</button>} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Application">
           <form onSubmit={submit} className="grid grid-cols-2 gap-3" noValidate>
@@ -70,8 +78,6 @@ export default function ScorePage() {
             <Field label="Email" error={errs.email}>{txt("email")}</Field>
             <Field label="Phone" error={errs.phone}>{txt("phone")}</Field>
             <div className="col-span-2"><Field label="Address" error={errs.address}>{txt("address")}</Field></div>
-            <Field label="Device ID" error={errs.device_id}>{txt("device_id")}</Field>
-            <Field label="IP address" error={errs.ip_address}>{txt("ip_address", "1.2.3.4")}</Field>
             <Field label="Employment">
               <select className="input mt-1" value={v.employment_status} onChange={(e) => set("employment_status", e.target.value)}>
                 {["employed", "self_employed", "unemployed", "student", "retired"].map((o) => <option key={o}>{o}</option>)}
@@ -84,8 +90,34 @@ export default function ScorePage() {
             </Field>
             <Field label="Annual income ($)" error={errs.annual_income}>{num("annual_income")}</Field>
             <Field label="Requested credit ($)" error={errs.requested_credit}>{num("requested_credit")}</Field>
+            <div className="col-span-2">
+              <button type="button" className="text-xs text-accent underline-offset-2 hover:underline" aria-expanded={advanced}
+                onClick={() => setAdvanced((a) => !a)}>
+                {advanced ? "Hide" : "Show"} advanced: device and network
+              </button>
+              {!advanced && (
+                <p className="mt-1 text-xs text-subtle">
+                  Device ID and IP address are filled in automatically, as a real website would capture them. Open Advanced to reuse a value from an earlier application and see how links form.
+                </p>
+              )}
+            </div>
+            {advanced && (
+              <>
+                <Field label="Device ID" error={errs.device_id}>{txt("device_id")}</Field>
+                <Field label="IP address" error={errs.ip_address}>{txt("ip_address", "1.2.3.4")}</Field>
+              </>
+            )}
             <div className="col-span-2"><button className="btn w-full justify-center" disabled={stage >= 0}>{stage >= 0 ? STAGES[stage] + "…" : "Score application"}</button></div>
           </form>
+          <details className="mt-4 text-xs text-muted">
+            <summary className="cursor-pointer text-ink">Why does this form ask for these details?</summary>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li><b>Device, IP, phone, email, address</b> link applications to each other. Many applications sharing one of these is a typical fraud-ring pattern, and it is the model&apos;s strongest signal.</li>
+              <li><b>Name and date of birth</b> are checked for consistency, for example an email that does not resemble the name.</li>
+              <li><b>Income, requested credit, employment, channel</b> feed ratio and risk checks.</li>
+              <li>Everything here is synthetic. Nothing you enter is real data, and the result is a simulated recommendation.</li>
+            </ul>
+          </details>
         </Card>
 
         <div className="space-y-4">
