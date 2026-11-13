@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export const REPO_URL = "https://github.com/ragurajakrishnan15/Fraud-Sheild";
+export const REPO_URL = "https://github.com/ragurajakrishnan15/identitygraph-ai";
 
 const NAV = [
   { href: "/overview", label: "Overview" },

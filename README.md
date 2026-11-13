@@ -1,6 +1,6 @@
 # IdentityGraph AI
 
-[![CI](https://github.com/ragurajakrishnan15/Fraud-Sheild/actions/workflows/ci.yml/badge.svg?branch=identitygraph-nextjs)](https://github.com/ragurajakrishnan15/Fraud-Sheild/actions/workflows/ci.yml)
+[![CI](https://github.com/ragurajakrishnan15/identitygraph-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/ragurajakrishnan15/identitygraph-ai/actions/workflows/ci.yml)
 
 **Identity-graph fraud risk for credit applications.** It generates synthetic applications, engineers leakage-safe
 identity / device / velocity / graph features, trains and compares eight models, serves explained scores through a FastAPI
