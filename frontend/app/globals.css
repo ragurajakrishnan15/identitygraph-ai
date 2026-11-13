@@ -2,12 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
-body { @apply bg-navy-950 text-slate-200 antialiased; background-image: radial-gradient(1200px 500px at 80% -10%, rgba(124,108,246,.14), transparent); }
-.card { @apply rounded-xl border border-navy-600/60 bg-navy-800/80 p-4 shadow-lg shadow-black/20; }
-.input { @apply w-full rounded-lg border border-navy-600 bg-navy-900 px-3 py-2 text-sm outline-none focus:border-accent; }
-.btn { @apply inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent/80 disabled:opacity-50; }
-.btn-ghost { @apply inline-flex items-center gap-2 rounded-lg border border-navy-600 px-3 py-2 text-sm text-slate-300 hover:bg-navy-700; }
-.th { @apply px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-400; }
-.td { @apply px-3 py-2 text-sm; }
+/* Design tokens (space-separated RGB so Tailwind can apply alpha). Light is the default; dark follows the OS. */
+:root {
+  --bg: 251 251 253; --surface: 255 255 255; --fill: 245 245 247; --line: 224 224 229;
+  --ink: 29 29 31; --muted: 99 99 104; --subtle: 134 134 139;
+  --accent: 0 102 204; --safe: 36 138 61; --warn: 178 94 0; --danger: 215 0 21;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: 0 0 0; --surface: 22 22 23; --fill: 38 38 40; --line: 58 58 62;
+    --ink: 245 245 247; --muted: 161 161 166; --subtle: 134 134 139;
+    --accent: 41 151 255; --safe: 48 209 88; --warn: 255 159 10; --danger: 255 69 58;
+    color-scheme: dark;
+  }
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-bg font-sans text-ink antialiased; font-feature-settings: "ss01", "cv11"; text-rendering: optimizeLegibility; }
+::selection { background: rgb(var(--accent) / 0.25); }
+:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: 8px; }
+
+.card { @apply rounded-3xl border border-line/70 bg-surface p-6 shadow-card; }
+.input { @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-subtle focus:border-accent focus:ring-4 focus:ring-accent/15; }
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50; }
+.btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink transition hover:bg-fill active:scale-[0.98]; }
+.th { @apply px-3 py-2.5 text-left text-[11px] font-medium uppercase tracking-wider text-subtle; }
+.td { @apply px-3 py-3 text-sm; }
+.glass { @apply border-b border-line/60 bg-bg/70 backdrop-blur-xl backdrop-saturate-150; }
 .react-flow__attribution { display: none; }
+.react-flow__controls-button { background: rgb(var(--surface)); border-color: rgb(var(--line)); color: rgb(var(--ink)); fill: rgb(var(--ink)); }
+
+@keyframes pulse-ring { from { transform: scale(1); opacity: .6; } to { transform: scale(2.1); opacity: 0; } }
+.pulse-ring { transform-box: fill-box; transform-origin: center; animation: pulse-ring 2.2s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

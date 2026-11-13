@@ -1,2 +1,3 @@
 velocity_windows_hours: [1, 24, 168]
-label_maturity_days: 30     # a label is "known" only this long after the application
+label_scope: all_matured   # all_matured | train (train-only labels; see reports/model_card.md)
+label_maturity_days: 7     # a label is "known" only this long after the application

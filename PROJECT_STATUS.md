@@ -1,29 +1,25 @@
 # PROJECT_STATUS
 
-Last updated: 2026-11-13. Everything below marked **verified** was actually run in this session.
+Last updated: 2026-11-13. Items marked **verified** were actually run in this session.
 
 ## Done
-- Synthetic generator (20k rows, seeded, 7 scenarios), schema/quality validation, data card, data dictionary. **verified**: `generate_data.py`, `validate_data.py`
-- Point-in-time features (reuse, velocity 1h/24h/7d, age, ratio, identity flags, time) + union-find graph features + matured/train-only neighbor-fraud ratio. **verified** by unit tests
-- Chronological split; 4 models; validation-only thresholds; artifacts; model card; evaluation summary. **verified**: `train.py`, `evaluate.py`
-- NetworkX identity graph + React-Flow serialization; SHAP explanations (fallback implemented); decision policy; monitoring (PSI, drift, quality, score/tier distribution)
-- FastAPI (all spec endpoints + `/overview`, notes, entity search), SQLAlchemy DB (SQLite; Postgres via compose), seed script. **verified**: API tests + live curl (health, CORS preflight, list)
-- Next.js frontend: Overview, Score, Applications (+drawer), Application detail, Network, Models, Monitoring, Features, Reports (CSV export). **verified**: `npm run lint`, `tsc --noEmit`, `next build` all pass
-- Tests: 21 pytest tests pass (unit, integration, API). `ruff check .` clean. **verified**
-- Dockerfiles, docker-compose (backend, frontend, Postgres, healthchecks, volume), CI workflow, README. **verified**: `docker compose up --build` trained inside the container, seeded Postgres, API healthy, frontend served; same metrics as the local run
-- Browser UI smoke test (`tests/e2e/ui_smoke.py`, Playwright + Edge): 21 checks (form validation, scoring, filters, search, pagination, drawer, notes, graph links/search/select, model switch, CSV export) pass against the Docker stack
-- 3 notebooks in `notebooks/` (generated + executed by `scripts/make_notebooks.py`; outputs come from the real artifacts)
-- Found and fixed via that test: the network graph's ring layout overlapped nodes and blocked clicks; edge labels removed to cut clutter
+- Synthetic generator (20k rows, seeded, 7 scenarios), validation, data card/dictionary. **verified**
+- Point-in-time features + union-find graph features + neighbour-fraud ratio (label-maturity lag, `label_scope` all_matured|train). **verified** by unit tests, including a leakage test per mode
+- Chronological split; **8 models** (LR, RF, GB/XGBoost/LightGBM each with and without graph features); validation-only thresholds with a 15% review-capacity cap; model card; evaluation summary. **verified**
+- NetworkX identity graph, SHAP explanations, decision policy, PSI monitoring. FastAPI (all spec endpoints + overview, notes, entity search); SQLAlchemy + **Alembic migrations** (up/down tested on SQLite; run on container start against Postgres). **verified**
+- **Apple-style Next.js UI**: landing page (hero, results, limits), frosted top nav, light/dark themes, Framer Motion reveals, 1/2-hop network toggle. `lint`, `tsc`, `next build` pass. **verified**
+- Tests: 22 pytest tests pass; `ruff check .` clean; **24/24 browser checks** pass against the Docker stack (Postgres). **verified**
+- Docker Compose (model built into the image, so start-up takes seconds), Render blueprint, Vercel config, `docs/DEPLOYMENT.md`, README with screenshots, 3 executed notebooks.
+- Pushed to GitHub branch `identitygraph-nextjs` (see "Pending").
 
 ## Pending / known gaps (honest list)
-- **CI workflow not executed** on GitHub (nothing pushed; needs a remote).
-- UI smoke test had one unexplained one-off failure (score page showed no mock banner on re-runs); not reproduced in 3 later runs.
-- Alembic migrations, XGBoost/LightGBM/MLflow, IEEE-CIS track and Framer Motion polish are not implemented.
-- Graph-enhanced model does not beat the baseline on PR-AUC (reported as measured). Likely cause: `neighbor_fraud_ratio` is ~always 0 in val/test but informative in train (train/serve skew); see reports/model_card.md. Not yet fixed.
-- New-application scoring takes ~4-5 s (recomputes features over history); not low-latency.
-- Monitoring is batch (train vs test), not real-time; no persistent online-score monitoring.
-- Synthetic metrics are optimistic; scores are uncalibrated.
-- Bug found and fixed during testing: pandas 3 datetime unit assumption broke velocity windows/maturity lag on non-ns datetimes (now unit-safe, regression-tested).
+- **Not yet deployed.** Configs and steps are ready (`docs/DEPLOYMENT.md`); deploying needs the owner's Vercel and Render accounts.
+- **GitHub CI not yet observed green** (runs on the pushed branch; check the Actions tab).
+- The target repo's `main` already holds a different project (Streamlit "FraudShield AI"); this project lives on branch `identitygraph-nextjs` until the owner decides how to merge.
+- Graph lift (+0.015 PR-AUC) relies on a 7-day label-maturity lag chosen after seeing test results (one alternative tried); single seed, no confidence intervals.
+- MLflow and the IEEE-CIS real-data track are not implemented (the separate FraudShield project on `main` covers IEEE-CIS).
+- New-application scoring takes ~4-5 s (recomputes features over history). Monitoring is batch only. Synthetic metrics are optimistic; scores are uncalibrated.
+- One earlier unexplained one-off UI smoke failure (not reproduced in many later runs).
 
 ## Run commands
 ```
@@ -33,4 +29,5 @@ python scripts/train.py && python scripts/evaluate.py && python scripts/seed_db.
 uvicorn backend.app.main:app --reload --port 8000
 cd frontend && npm install && npm run dev
 pytest -q && ruff check .
+docker compose up --build
 ```

@@ -56,7 +56,7 @@ export const api = {
   addNote: (id: string, note: string) =>
     http<{ notes: { id: number; note: string; created_at: string }[] }>(`/applications/${encodeURIComponent(id)}/notes`, { method: "POST", body: JSON.stringify({ note }) }),
   score: (r: ScoreRequest) => withFallback(() => http<ScoreResponse>("/score", { method: "POST", body: JSON.stringify(r) }), () => mock.score(r)),
-  network: (id: string) => withFallback(() => http<NetworkResponse>(`/entities/${id}/network`), () => mock.network(id)),
+  network: (id: string, radius = 1) => withFallback(() => http<NetworkResponse>(`/entities/${id}/network?radius=${radius}`), () => mock.network(id)),
   entities: (q: string) => withFallback(() => http<{ items: EntityHit[] }>(`/entities?q=${encodeURIComponent(q)}`), mock.entities),
   modelMetrics: () => withFallback(() => http<ModelReport>("/metrics/model"), mock.modelReport),
   monitoring: () => withFallback(() => http<Monitoring>("/metrics/monitoring"), mock.monitoring),

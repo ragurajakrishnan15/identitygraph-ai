@@ -31,10 +31,10 @@ export function CaseView({ id }: { id: string }) {
         return (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-xl font-semibold text-white">{a.application_id}</h2>
+              <h2 className="text-xl font-semibold text-ink">{a.application_id}</h2>
               {a.score && <TierBadge tier={a.score.tier} />}
-              {a.score && <span className="text-sm text-slate-400">score {a.score.display_score}/100</span>}
-              {a.source === "online" && <span className="rounded border border-accent/40 px-2 text-xs text-accent-soft">online-scored</span>}
+              {a.score && <span className="text-sm text-muted">score {a.score.display_score}/100</span>}
+              {a.source === "online" && <span className="rounded border border-accent/40 px-2 text-xs text-accent">online-scored</span>}
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <Card title="Profile">
@@ -43,18 +43,18 @@ export function CaseView({ id }: { id: string }) {
                     ["Device", a.device_id], ["IP", a.ip_address], ["Employment", a.employment_status],
                     ["Income", money(a.annual_income)], ["Requested", money(a.requested_credit)], ["Channel", a.application_channel],
                     ["Submitted", fmtDate(a.application_timestamp)]] as const).map(([k, v]) => (
-                    <div key={k} className="contents"><dt className="text-slate-500">{k}</dt><dd className="break-all">{v}</dd></div>
+                    <div key={k} className="contents"><dt className="text-subtle">{k}</dt><dd className="break-all">{v}</dd></div>
                   ))}
                 </dl>
                 {a.fraud_scenario && (
-                  <p className="mt-3 text-xs text-slate-500">Synthetic ground truth (training only): {a.fraud_scenario} / label {a.fraud_label}</p>
+                  <p className="mt-3 text-xs text-subtle">Synthetic ground truth (training only): {a.fraud_scenario} / label {a.fraud_label}</p>
                 )}
               </Card>
               <Card title="Risk assessment">
                 {a.score ? (
                   <>
                     <p className="text-sm">{a.score.recommendation}</p>
-                    <p className="mt-1 text-xs text-slate-500">Model {a.score.model_version}; uncalibrated score {a.score.score.toFixed(3)}. Simulated output.</p>
+                    <p className="mt-1 text-xs text-subtle">Model {a.score.model_version}; uncalibrated score {a.score.score.toFixed(3)}. Simulated output.</p>
                     <ul className="mt-3 space-y-2 text-sm">
                       {a.score.factors.map((f) => (
                         <li key={f.feature} className="flex justify-between gap-3">
@@ -63,25 +63,25 @@ export function CaseView({ id }: { id: string }) {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-3 text-xs text-slate-500">Factors are associations, not proof.</p>
+                    <p className="mt-3 text-xs text-subtle">Factors are associations, not proof.</p>
                   </>
-                ) : <p className="text-sm text-slate-400">Not scored.</p>}
+                ) : <p className="text-sm text-muted">Not scored.</p>}
               </Card>
               <Card title="Linked entities (graph links)">
                 <ul className="space-y-1 text-sm">
                   {(a.linked_entities ?? []).map((l) => (
                     <li key={l.entity_id} className="flex justify-between gap-2">
-                      <Link className="text-accent-soft" href={`/network?focus=${encodeURIComponent(l.entity_id)}`}>{l.kind}: {l.label}</Link>
-                      <span className={l.shared_with_other_applications > 0 ? "text-warn" : "text-slate-500"}>{l.shared_with_other_applications} other app(s)</span>
+                      <Link className="text-accent" href={`/network?focus=${encodeURIComponent(l.entity_id)}`}>{l.kind}: {l.label}</Link>
+                      <span className={l.shared_with_other_applications > 0 ? "text-warn" : "text-subtle"}>{l.shared_with_other_applications} other app(s)</span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-xs text-slate-500">Connections are investigation signals, not proof of fraud.</p>
+                <p className="mt-3 text-xs text-subtle">Connections are investigation signals, not proof of fraud.</p>
               </Card>
               <Card title="Activity timeline">
-                <ol className="space-y-2 border-l border-navy-600 pl-4 text-sm">
+                <ol className="space-y-2 border-l border-line pl-4 text-sm">
                   {(a.timeline ?? []).map((t, i) => (
-                    <li key={i}><div>{t.event}</div><div className="text-xs text-slate-500">{fmtDate(t.at)}</div></li>
+                    <li key={i}><div>{t.event}</div><div className="text-xs text-subtle">{fmtDate(t.at)}</div></li>
                   ))}
                 </ol>
               </Card>
@@ -94,8 +94,8 @@ export function CaseView({ id }: { id: string }) {
               </div>
               {noteErr && <p className="mt-2 text-xs text-danger">{noteErr}</p>}
               <ul className="mt-3 space-y-2 text-sm">
-                {notes.map((n) => <li key={n.id} className="rounded border border-navy-700 p-2">{n.note}<div className="text-xs text-slate-500">{fmtDate(n.created_at)}</div></li>)}
-                {notes.length === 0 && <li className="text-slate-500">No notes yet.</li>}
+                {notes.map((n) => <li key={n.id} className="rounded border border-line p-2">{n.note}<div className="text-xs text-subtle">{fmtDate(n.created_at)}</div></li>)}
+                {notes.length === 0 && <li className="text-subtle">No notes yet.</li>}
               </ul>
             </Card>
           </div>

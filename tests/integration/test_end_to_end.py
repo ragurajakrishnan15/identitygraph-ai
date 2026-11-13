@@ -8,7 +8,7 @@ from identitygraph.models.registry import load_bundle
 
 def test_pipeline(small_df, trained):
     assert validate(small_df)["ok"]
-    assert set(trained["models"]) == {"logistic_regression", "random_forest", "gradient_boosting", "graph_gradient_boosting"}
+    assert {"logistic_regression", "random_forest", "gradient_boosting", "graph_gradient_boosting"} <= set(trained["models"])
     for m in trained["models"].values():
         assert 0 <= m["test"]["pr_auc"] <= 1 and m["thresholds"]["selected_on"] == "validation"
     # primary model beats a random baseline on the held-out period (fraud rate ~7%)

@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import { Sidebar } from "@/components/shell/Sidebar";
+import { TopNav } from "@/components/shell/TopNav";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <Sidebar />
-      <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
-    </div>
+    <>
+      <TopNav />
+      <main className="mx-auto w-full max-w-7xl px-5 py-10 md:px-8 md:py-14">{children}</main>
+    </>
   );
 }

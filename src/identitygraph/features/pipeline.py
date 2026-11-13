@@ -84,7 +84,10 @@ def build_features(df: pd.DataFrame, train_end: pd.Timestamp | None = None,
         for h in hours:
             df[f"{col}_apps_{names[h]}"] = w[h]
 
-    gf = graph_features(df, ENTITY_COLS, train_end=train_end,
+    # label_scope "all_matured": any earlier label older than the maturity lag is known in production
+    # (delayed feedback). "train": legacy strict mode, only train-period labels (causes train/serve skew).
+    cutoff = train_end if cfg.get("label_scope", "all_matured") == "train" else None
+    gf = graph_features(df, ENTITY_COLS, train_end=cutoff,
                         maturity_days=cfg["label_maturity_days"])
     for c in GRAPH_FEATURES:
         df[c] = gf[c]

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from identitygraph.config import load_config
 from identitygraph.data.generator import generate
 from identitygraph.data.schemas import APPLICATION_COLUMNS
 from identitygraph.data.validation import validate
@@ -69,12 +70,29 @@ def test_neighbor_fraud_ratio_ignores_labels_after_train_end_and_immature():
 
 
 def test_changing_future_labels_does_not_change_features():
+    """Strict mode (label_scope=train): labels after train_end never influence any feature."""
+    cfg = {**load_config("features"), "label_scope": "train"}
     df = generate(n=800, seed=5)
     split_t = df.application_timestamp.iloc[480]
-    a = build_features(df, train_end=split_t)
+    a = build_features(df, train_end=split_t, cfg=cfg)
     df2 = df.copy()
     df2.loc[df2.application_timestamp > split_t, "fraud_label"] = 1 - df2.fraud_label
-    b = build_features(df2, train_end=split_t)
+    b = build_features(df2, train_end=split_t, cfg=cfg)
+    pd.testing.assert_frame_equal(a.drop(columns="fraud_label"), b.drop(columns="fraud_label"))
+
+
+def test_immature_labels_never_leak_in_all_matured_mode():
+    """Default mode: a label becomes usable only after the maturity lag, so flipping every label
+    younger than the lag (relative to the last application) must not change any feature."""
+    cfg = load_config("features")
+    df = generate(n=800, seed=5)
+    last = df.application_timestamp.max()
+    young = df.application_timestamp > last - pd.Timedelta(days=cfg["label_maturity_days"])
+    assert young.sum() > 0
+    a = build_features(df, cfg=cfg)
+    df2 = df.copy()
+    df2.loc[young, "fraud_label"] = 1 - df2.loc[young, "fraud_label"]
+    b = build_features(df2, cfg=cfg)
     pd.testing.assert_frame_equal(a.drop(columns="fraud_label"), b.drop(columns="fraud_label"))
 
 

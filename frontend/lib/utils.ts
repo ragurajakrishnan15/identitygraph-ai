@@ -7,11 +7,11 @@ export const pct = (n: number, d = 1) => `${(n * 100).toFixed(d)}%`;
 export const fmtDate = (s: string) => new Date(s).toLocaleString();
 
 export const TIER_STYLE: Record<Tier, string> = {
-  Low: "bg-safe/15 text-safe border-safe/30",
-  Medium: "bg-warn/15 text-warn border-warn/30",
-  High: "bg-danger/15 text-danger border-danger/30",
+  Low: "bg-safe/10 text-safe border-safe/25",
+  Medium: "bg-warn/10 text-warn border-warn/25",
+  High: "bg-danger/10 text-danger border-danger/25",
 };
-export const TIER_COLOR: Record<Tier, string> = { Low: "#2dd4bf", Medium: "#fbbf24", High: "#fb7185" };
+export const TIER_COLOR: Record<Tier, string> = { Low: "#34c759", Medium: "#ff9f0a", High: "#ff3b30" };
 
 export function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   if (!rows.length) return;

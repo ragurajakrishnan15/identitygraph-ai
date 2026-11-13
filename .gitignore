@@ -14,3 +14,4 @@ artifacts/*
 node_modules/
 .next/
 frontend/.env.local
+*.tsbuildinfo

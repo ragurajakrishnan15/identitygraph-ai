@@ -129,6 +129,25 @@ with sync_playwright() as p:
         log(True, "overview/monitoring/features render")
     t("misc", misc)
 
+    def landing():
+        pg.goto(B + "/", wait_until="networkidle")
+        log(pg.locator("h1:has-text('Catch fraud rings')").count() == 1, "landing: hero renders")
+        log(pg.locator("text=Honest about what it is").count() == 1, "landing: limitations section present")
+        pg.click("a:has-text('Explore the dashboard')")
+        pg.wait_for_url("**/overview")
+        log(pg.locator("h1:has-text('Overview')").count() == 1, "landing: CTA opens dashboard")
+    t("landing", landing)
+
+    def hops():
+        pg.goto(B + "/network", wait_until="networkidle")
+        pg.wait_for_selector(".react-flow__node")
+        one = pg.locator(".react-flow__node").count()
+        pg.click("button:has-text('2 hops')")
+        pg.wait_for_timeout(1500)
+        two = pg.locator(".react-flow__node").count()
+        log(two > one, "network: 2 hops shows more nodes", f"{one} -> {two}")
+    t("hops", hops)
+
     pg.goto(B + "/does-not-exist")
     log(pg.locator("text=Page not found").count() == 1, "404 page")
 

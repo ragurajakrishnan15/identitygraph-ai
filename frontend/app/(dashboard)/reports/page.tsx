@@ -38,7 +38,7 @@ export default function Reports() {
             <table className="w-full">
               <thead><tr>{["Application", "Name", "Requested", "Score", "Tier", "Simulated recommendation"].map((h) => <th key={h} className="th">{h}</th>)}</tr></thead>
               <tbody>{p.items.map((a) => (
-                <tr key={a.application_id} className="border-t border-navy-700">
+                <tr key={a.application_id} className="border-t border-line">
                   <td className="td">{a.application_id}</td><td className="td">{a.full_name}</td><td className="td">{money(a.requested_credit)}</td>
                   <td className="td">{a.score?.display_score}</td><td className="td">{a.score && <TierBadge tier={a.score.tier} />}</td><td className="td">{a.score?.recommendation}</td>
                 </tr>))}</tbody>
@@ -46,7 +46,7 @@ export default function Reports() {
           </Card>
         )}
       </State>
-      <p className="mt-4 text-xs text-slate-500">The full model card and evaluation summary live in <code>reports/</code>. Data is synthetic; nothing here is a real credit decision.</p>
+      <p className="mt-4 text-xs text-subtle">The full model card and evaluation summary live in <code>reports/</code>. Data is synthetic; nothing here is a real credit decision.</p>
     </>
   );
 }

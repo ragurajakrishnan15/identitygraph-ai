@@ -9,6 +9,7 @@ from identitygraph.config import ROOT
 class Settings:
     def __init__(self):
         self.database_url = os.getenv("DATABASE_URL", f"sqlite:///{(ROOT / 'identitygraph.db').as_posix()}")
+        self.cors_origin_regex = os.getenv("CORS_ORIGIN_REGEX") or None  # e.g. https://.*\.vercel\.app for preview deploys
         self.cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")]
         self.api_prefix = "/api/v1"
 

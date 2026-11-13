@@ -16,14 +16,14 @@ export default function Features() {
                 <ul className="space-y-2 text-sm">
                   {g.features.map((f) => (
                     <li key={f.name}>
-                      <div className="flex justify-between"><span>{f.name}</span><span className="text-slate-400">{f.importance != null ? f.importance.toFixed(3) : "-"}</span></div>
-                      <div className="mt-1 h-1.5 rounded bg-navy-700"><div className="h-1.5 rounded bg-accent" style={{ width: `${Math.min(100, (f.importance ?? 0) * 250)}%` }} /></div>
+                      <div className="flex justify-between"><span>{f.name}</span><span className="text-muted">{f.importance != null ? f.importance.toFixed(3) : "-"}</span></div>
+                      <div className="mt-1 h-1.5 rounded bg-fill"><div className="h-1.5 rounded bg-accent" style={{ width: `${Math.min(100, (f.importance ?? 0) * 250)}%` }} /></div>
                     </li>
                   ))}
                 </ul>
               </Card>
             ))}
-            {c.groups.length === 0 && <p className="text-sm text-slate-400">No feature catalog available.</p>}
+            {c.groups.length === 0 && <p className="text-sm text-muted">No feature catalog available.</p>}
           </div>
         )}
       </State>

@@ -1,33 +1,36 @@
 "use client";
 import {
-  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
+  Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, LineChart, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { TIER_COLOR } from "@/lib/utils";
 import type { Tier } from "@/types/application";
 
-const AXIS = { stroke: "#64748b", fontSize: 11 };
-const TT = { contentStyle: { background: "#111a33", border: "1px solid #26335e", borderRadius: 8, color: "#e2e8f0" } };
+const AXIS = { stroke: "rgb(var(--subtle))", fontSize: 11, tickLine: false, axisLine: false };
+const GRID = "rgb(var(--line))";
+const LEGEND_FMT = (v: string) => <span style={{ color: "rgb(var(--muted))", fontSize: 12 }}>{v}</span>;
+const BLUE = "#0a84ff";
+const TT = { contentStyle: { background: "rgb(var(--surface))", border: "1px solid rgb(var(--line))", borderRadius: 14, color: "rgb(var(--ink))", boxShadow: "0 10px 40px rgb(0 0 0 / .12)", fontSize: 12 }, cursor: { stroke: "rgb(var(--line))" } };
 
 export function TrendChart({ data }: { data: { period: string; applications: number; avg_score: number }[] }) {
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <AreaChart data={data}>
+      <ComposedChart data={data}>
         <defs>
           <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c6cf6" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="#7c6cf6" stopOpacity={0} />
+            <stop offset="0%" stopColor="#0a84ff" stopOpacity={0.5} />
+            <stop offset="100%" stopColor="#0a84ff" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid stroke="#1a2547" vertical={false} />
+        <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis dataKey="period" {...AXIS} />
         <YAxis yAxisId="l" {...AXIS} />
         <YAxis yAxisId="r" orientation="right" domain={[0, 1]} {...AXIS} />
         <Tooltip {...TT} />
-        <Legend />
-        <Area yAxisId="l" dataKey="applications" name="Applications" stroke="#7c6cf6" fill="url(#g1)" />
-        <Line yAxisId="r" dataKey="avg_score" name="Avg score" stroke="#fbbf24" dot={false} />
-      </AreaChart>
+        <Legend formatter={LEGEND_FMT} />
+        <Area yAxisId="l" dataKey="applications" name="Applications" stroke="#0a84ff" fill="url(#g1)" />
+        <Line yAxisId="r" dataKey="avg_score" name="Avg score" stroke="#ff9f0a" dot={false} />
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }
@@ -41,7 +44,7 @@ export function TierPie({ tiers }: { tiers: Partial<Record<Tier, number>> }) {
           {data.map((d) => <Cell key={d.name} fill={TIER_COLOR[d.name as Tier]} />)}
         </Pie>
         <Tooltip {...TT} />
-        <Legend />
+        <Legend formatter={LEGEND_FMT} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -56,22 +59,22 @@ export function ChannelBars({ rows }: { rows: { channel: string; tier: Tier; cou
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={Object.values(byCh)}>
-        <CartesianGrid stroke="#1a2547" vertical={false} />
+        <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis dataKey="channel" {...AXIS} />
         <YAxis {...AXIS} />
         <Tooltip {...TT} />
-        <Legend />
+        <Legend formatter={LEGEND_FMT} />
         {(["Low", "Medium", "High"] as Tier[]).map((t) => <Bar key={t} dataKey={t} stackId="a" fill={TIER_COLOR[t]} />)}
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-export function HistBars({ data, xKey, yKey, color = "#7c6cf6", height = 240 }: { data: Record<string, unknown>[]; xKey: string; yKey: string; color?: string; height?: number }) {
+export function HistBars({ data, xKey, yKey, color = BLUE, height = 240 }: { data: Record<string, unknown>[]; xKey: string; yKey: string; color?: string; height?: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data}>
-        <CartesianGrid stroke="#1a2547" vertical={false} />
+        <CartesianGrid stroke={GRID} vertical={false} />
         <XAxis dataKey={xKey} {...AXIS} interval="preserveStartEnd" />
         <YAxis {...AXIS} />
         <Tooltip {...TT} />
@@ -81,11 +84,11 @@ export function HistBars({ data, xKey, yKey, color = "#7c6cf6", height = 240 }: 
   );
 }
 
-export function HBars({ data, xKey, yKey, color = "#7c6cf6" }: { data: Record<string, unknown>[]; xKey: string; yKey: string; color?: string }) {
+export function HBars({ data, xKey, yKey, color = BLUE }: { data: Record<string, unknown>[]; xKey: string; yKey: string; color?: string }) {
   return (
     <ResponsiveContainer width="100%" height={Math.max(180, data.length * 26)}>
       <BarChart data={data} layout="vertical" margin={{ left: 90 }}>
-        <CartesianGrid stroke="#1a2547" horizontal={false} />
+        <CartesianGrid stroke={GRID} horizontal={false} />
         <XAxis type="number" {...AXIS} />
         <YAxis type="category" dataKey={yKey} {...AXIS} width={170} />
         <Tooltip {...TT} />
@@ -102,11 +105,11 @@ export function CurveChart({ series, xLabel, yLabel }: { series: { name: string;
   return (
     <ResponsiveContainer width="100%" height={260}>
       <LineChart data={rows}>
-        <CartesianGrid stroke="#1a2547" />
-        <XAxis dataKey="x" type="number" domain={[0, 1]} {...AXIS} label={{ value: xLabel, fill: "#64748b", fontSize: 11, position: "insideBottom", offset: -2 }} />
-        <YAxis domain={[0, 1]} {...AXIS} label={{ value: yLabel, fill: "#64748b", fontSize: 11, angle: -90, position: "insideLeft" }} />
+        <CartesianGrid stroke={GRID} />
+        <XAxis dataKey="x" type="number" domain={[0, 1]} {...AXIS} label={{ value: xLabel, fill: "rgb(var(--subtle))", fontSize: 11, position: "insideBottom", offset: -2 }} />
+        <YAxis domain={[0, 1]} {...AXIS} label={{ value: yLabel, fill: "rgb(var(--subtle))", fontSize: 11, angle: -90, position: "insideLeft" }} />
         <Tooltip {...TT} formatter={(v: number) => v.toFixed(3)} labelFormatter={(l: number) => `${xLabel}: ${Number(l).toFixed(3)}`} />
-        <Legend />
+        <Legend formatter={LEGEND_FMT} />
         {series.map((s) => <Line key={s.name} dataKey={s.name} stroke={s.color} dot={false} connectNulls strokeWidth={2} />)}
       </LineChart>
     </ResponsiveContainer>

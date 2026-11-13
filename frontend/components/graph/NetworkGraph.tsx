@@ -5,8 +5,8 @@ import "reactflow/dist/style.css";
 import type { NetworkResponse } from "@/types/graph";
 
 export const KIND_COLOR: Record<string, string> = {
-  application: "#7c6cf6", applicant: "#94a3b8", device: "#fb7185", ip: "#fbbf24",
-  email: "#2dd4bf", phone: "#38bdf8", address: "#c084fc",
+  application: "#0a84ff", applicant: "#8e8e93", device: "#ff3b30", ip: "#ff9f0a",
+  email: "#34c759", phone: "#5ac8fa", address: "#af52de",
 };
 
 function layout(data: NetworkResponse): Node[] {
@@ -30,7 +30,7 @@ function layout(data: NetworkResponse): Node[] {
   let prevR = 0;
   [...rings.keys()].sort((a, b) => a - b).forEach((d) => {
     const ids = rings.get(d)!;
-    const r = d === 0 ? 0 : Math.max(prevR + 140, (ids.length * 100) / (2 * Math.PI));
+    const r = d === 0 ? 0 : Math.max(prevR + 140, (ids.length * 150) / (2 * Math.PI));
     prevR = r;
     ids.forEach((id, i) => {
       const a = (2 * Math.PI * i) / ids.length + d * 0.5;
@@ -42,10 +42,10 @@ function layout(data: NetworkResponse): Node[] {
     position: pos.get(n.id) ?? { x: 0, y: 0 },
     data: { label: `${n.type}\n${n.label.length > 22 ? n.label.slice(0, 20) + "…" : n.label}` },
     style: {
-      background: "#111a33", color: "#e2e8f0", fontSize: 10, whiteSpace: "pre-line", textAlign: "center", width: 120,
-      border: `2px solid ${n.flagged ? "#fb7185" : KIND_COLOR[n.type] ?? "#64748b"}`,
+      background: "rgb(var(--surface))", color: "rgb(var(--ink))", fontSize: 10, fontWeight: 500, whiteSpace: "pre-line", textAlign: "center", width: 120,
+      border: `2px solid ${n.flagged ? "#ff3b30" : KIND_COLOR[n.type] ?? "#8e8e93"}`,
       borderRadius: n.type === "application" ? 8 : 24,
-      boxShadow: n.is_focus ? "0 0 0 4px rgba(124,108,246,.5)" : n.flagged ? "0 0 14px rgba(251,113,133,.6)" : "none",
+      boxShadow: n.is_focus ? "0 0 0 5px rgba(10,132,255,.28)" : n.flagged ? "0 0 16px rgba(255,59,48,.35)" : "0 2px 8px rgba(0,0,0,.08)",
     },
   }));
 }
@@ -53,13 +53,13 @@ function layout(data: NetworkResponse): Node[] {
 export function NetworkGraph({ data, onSelect }: { data: NetworkResponse; onSelect: (id: string) => void }) {
   const nodes = useMemo(() => layout(data), [data]);
   const edges: Edge[] = useMemo(() => data.edges.map((e) => ({
-    id: e.id, source: e.source, target: e.target, style: { stroke: "#475569" },
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#475569" },
+    id: e.id, source: e.source, target: e.target, type: "straight", style: { stroke: "#a1a1a6" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#a1a1a6" },
   })), [data]);
   return (
-    <div className="h-[560px] w-full rounded-xl border border-navy-600/60 bg-navy-900">
+    <div className="h-[560px] w-full overflow-hidden rounded-3xl border border-line bg-fill">
       <ReactFlow nodes={nodes} edges={edges} fitView fitViewOptions={{ padding: 0.15 }} minZoom={0.1} onNodeClick={(_, n) => onSelect(n.id)} proOptions={{ hideAttribution: true }}>
-        <Background color="#1a2547" />
+        <Background color="rgb(var(--line))" gap={22} />
         <Controls />
       </ReactFlow>
     </div>
@@ -68,7 +68,7 @@ export function NetworkGraph({ data, onSelect }: { data: NetworkResponse; onSele
 
 export function Legend() {
   return (
-    <div className="flex flex-wrap gap-3 text-xs text-slate-400">
+    <div className="flex flex-wrap gap-3 text-xs text-muted">
       {Object.entries(KIND_COLOR).map(([k, c]) => (
         <span key={k} className="flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: c }} />{k}</span>
       ))}

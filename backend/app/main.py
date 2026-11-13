@@ -26,7 +26,7 @@ def create_app() -> FastAPI:
     s = get_settings()
     app = FastAPI(title="IdentityGraph AI", version="0.1.0", lifespan=lifespan,
                   description="Portfolio fraud-risk platform on SYNTHETIC data. Decisions are simulated.")
-    app.add_middleware(CORSMiddleware, allow_origins=s.cors_origins, allow_methods=["*"], allow_headers=["*"])
+    app.add_middleware(CORSMiddleware, allow_origins=s.cors_origins, allow_origin_regex=s.cors_origin_regex, allow_methods=["*"], allow_headers=["*"])
     for r in (health, applications, scoring, entities, models):
         app.include_router(r.router, prefix=s.api_prefix)
     return app

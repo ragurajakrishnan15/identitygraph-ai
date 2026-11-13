@@ -56,8 +56,8 @@ export default function Applications() {
                   <thead><tr>{["Application", "Name", "Channel", "Income", "Requested", "Submitted", "Score", "Tier"].map((h) => <th key={h} className="th">{h}</th>)}</tr></thead>
                   <tbody>
                     {p.items.map((a) => (
-                      <tr key={a.application_id} className="cursor-pointer border-t border-navy-700 hover:bg-navy-700/50" onClick={() => setOpen(a.application_id)}>
-                        <td className="td text-accent-soft">{a.application_id}</td>
+                      <tr key={a.application_id} className="cursor-pointer border-t border-line hover:bg-fill/50" onClick={() => setOpen(a.application_id)}>
+                        <td className="td text-accent">{a.application_id}</td>
                         <td className="td">{a.full_name}</td>
                         <td className="td">{a.application_channel}</td>
                         <td className="td">{money(a.annual_income)}</td>
@@ -67,11 +67,11 @@ export default function Applications() {
                         <td className="td">{a.score && <TierBadge tier={a.score.tier} />}</td>
                       </tr>
                     ))}
-                    {p.items.length === 0 && <tr><td className="td text-slate-500" colSpan={8}>No applications match.</td></tr>}
+                    {p.items.length === 0 && <tr><td className="td text-subtle" colSpan={8}>No applications match.</td></tr>}
                   </tbody>
                 </table>
               </div>
-              <div className="mt-3 flex items-center justify-between text-sm text-slate-400">
+              <div className="mt-3 flex items-center justify-between text-sm text-muted">
                 <span>{p.total.toLocaleString()} results</span>
                 <div className="flex items-center gap-2">
                   <button className="btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>
@@ -86,7 +86,7 @@ export default function Applications() {
 
       {open && (
         <div className="fixed inset-0 z-40 flex justify-end bg-black/60" onClick={() => setOpen(null)}>
-          <aside className="h-full w-full max-w-2xl overflow-y-auto border-l border-navy-600 bg-navy-900 p-5" onClick={(e) => e.stopPropagation()}>
+          <aside className="h-full w-full max-w-2xl overflow-y-auto border-l border-line bg-fill p-5" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex justify-between">
               <Link href={`/applications/${open}`} className="btn-ghost"><ExternalLink size={14} /> Open full page</Link>
               <button className="btn-ghost" onClick={() => setOpen(null)} aria-label="Close"><X size={14} /></button>

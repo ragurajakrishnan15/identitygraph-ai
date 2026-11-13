@@ -19,7 +19,7 @@ const SAMPLE: ScoreRequest = {
 const STAGES = ["Validating input", "Building point-in-time features", "Scoring model", "Explaining result"];
 
 const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
-  <label className="block text-xs text-slate-400">{label}{children}{error && <span className="text-danger">{error}</span>}</label>
+  <label className="block text-xs text-muted">{label}{children}{error && <span className="text-danger">{error}</span>}</label>
 );
 
 export default function ScorePage() {
@@ -92,30 +92,30 @@ export default function ScorePage() {
             <Card title="Scoring">
               <ol className="space-y-2 text-sm">
                 {STAGES.map((s, i) => (
-                  <li key={s} className={cn("flex items-center gap-2", i <= stage ? "text-white" : "text-slate-600")}>
-                    <span className={cn("h-2 w-2 rounded-full", i < stage ? "bg-safe" : i === stage ? "animate-pulse bg-accent" : "bg-navy-600")} /> {s}
+                  <li key={s} className={cn("flex items-center gap-2", i <= stage ? "text-ink" : "text-subtle")}>
+                    <span className={cn("h-2 w-2 rounded-full", i < stage ? "bg-safe" : i === stage ? "animate-pulse bg-accent" : "bg-line")} /> {s}
                   </li>
                 ))}
               </ol>
             </Card>
           )}
-          {!res && stage < 0 && !err && <Card><p className="text-sm text-slate-400">Submit the form to see a score, tier, contributing factors and linked entities.</p></Card>}
+          {!res && stage < 0 && !err && <Card><p className="text-sm text-muted">Submit the form to see a score, tier, contributing factors and linked entities.</p></Card>}
           {res && (
             <>
               <Card title="Risk assessment">
                 <div className="flex items-center gap-6">
                   <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full border-4" style={{ borderColor: TIER_COLOR[res.tier] }}>
-                    <div className="text-3xl font-semibold text-white">{res.display_score}</div>
-                    <div className="text-[10px] text-slate-400">/ 100</div>
+                    <div className="text-3xl font-semibold text-ink">{res.display_score}</div>
+                    <div className="text-[10px] text-muted">/ 100</div>
                   </div>
                   <div className="space-y-1 text-sm">
                     <div><TierBadge tier={res.tier} /></div>
-                    <div className="text-slate-300">{res.recommendation}</div>
-                    <div className="text-xs text-slate-500">Model {res.model_version}. Uncalibrated score {res.score.toFixed(3)} (not a probability).</div>
-                    <Link className="text-xs text-accent-soft" href={`/applications/${res.application_id}`}>Open case {res.application_id}</Link>
+                    <div className="text-ink">{res.recommendation}</div>
+                    <div className="text-xs text-subtle">Model {res.model_version}. Uncalibrated score {res.score.toFixed(3)} (not a probability).</div>
+                    <Link className="text-xs text-accent" href={`/applications/${res.application_id}`}>Open case {res.application_id}</Link>
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-slate-500">{res.note}</p>
+                <p className="mt-3 text-xs text-subtle">{res.note}</p>
               </Card>
               <Card title="Top contributing factors">
                 <ul className="space-y-2 text-sm">
@@ -126,20 +126,20 @@ export default function ScorePage() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-xs text-slate-500">Factors are model associations, not proof or causation.</p>
+                <p className="mt-3 text-xs text-subtle">Factors are model associations, not proof or causation.</p>
               </Card>
               <Card title="Network preview">
-                {res.linked_entities.length === 0 ? <p className="text-sm text-slate-400">No linked entities.</p> : (
+                {res.linked_entities.length === 0 ? <p className="text-sm text-muted">No linked entities.</p> : (
                   <ul className="space-y-1 text-sm">
                     {res.linked_entities.map((l) => (
                       <li key={l.entity_id} className="flex justify-between">
-                        <Link href={`/network?focus=${encodeURIComponent(l.entity_id)}`} className="text-accent-soft">{l.kind}: {l.label}</Link>
-                        <span className={l.shared_with_other_applications > 0 ? "text-warn" : "text-slate-500"}>shared with {l.shared_with_other_applications} other app(s)</span>
+                        <Link href={`/network?focus=${encodeURIComponent(l.entity_id)}`} className="text-accent">{l.kind}: {l.label}</Link>
+                        <span className={l.shared_with_other_applications > 0 ? "text-warn" : "text-subtle"}>shared with {l.shared_with_other_applications} other app(s)</span>
                       </li>
                     ))}
                   </ul>
                 )}
-                <p className="mt-3 text-xs text-slate-500">Connections are investigation signals, not proof of fraud.</p>
+                <p className="mt-3 text-xs text-subtle">Connections are investigation signals, not proof of fraud.</p>
               </Card>
             </>
           )}
